@@ -57,6 +57,7 @@ export interface GameState {
   successfulMissions: number;
   failedMissions: number;
   events: GameEvent[];
+  atoOrders: ATOOrder[];
 }
 
 export interface GameEvent {
@@ -65,4 +66,21 @@ export interface GameEvent {
   type: "info" | "warning" | "critical" | "success";
   message: string;
   base?: BaseType;
+}
+
+export interface ATOOrder {
+  id: string;
+  day: number;
+  missionType: MissionType;
+  label: string;
+  startHour: number;
+  endHour: number;
+  requiredCount: number;
+  aircraftType?: Aircraft["type"];
+  payload?: string;
+  launchBase: BaseType;
+  priority: "high" | "medium" | "low";
+  status: "pending" | "assigned" | "dispatched" | "completed";
+  assignedAircraft: string[];
+  sortiesPerDay?: number;
 }

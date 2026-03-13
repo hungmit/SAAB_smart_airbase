@@ -1,5 +1,4 @@
 import { motion } from "framer-motion";
-import { LucideIcon } from "lucide-react";
 
 interface StatusKortProps {
   titel: string;
@@ -9,35 +8,32 @@ interface StatusKortProps {
   farg: "green" | "blue" | "yellow" | "purple" | "red";
 }
 
-const fargMap = {
-  green: "border-status-green/30 bg-status-green/5",
-  blue: "border-status-blue/30 bg-status-blue/5",
-  yellow: "border-status-amber/30 bg-status-amber/5",
-  purple: "border-primary/30 bg-primary/5",
-  red: "border-status-red/30 bg-status-red/5",
-};
-
-const textMap = {
-  green: "text-status-green",
-  blue: "text-status-blue",
-  yellow: "text-status-amber",
-  purple: "text-primary",
-  red: "text-status-red",
+const accentMap = {
+  green:  { hex: "#005AA0", bg: "from-blue-50 to-blue-50/60",        border: "border-blue-300/60",   text: "text-blue-700",   iconBg: "bg-blue-100"      },
+  blue:   { hex: "#0284c7", bg: "from-sky-50 to-sky-50/60",          border: "border-sky-300/60",    text: "text-sky-700",    iconBg: "bg-sky-100"       },
+  yellow: { hex: "#FFB81C", bg: "from-amber-50 to-amber-50/60",      border: "border-amber-300/60",  text: "text-amber-700",  iconBg: "bg-amber-100"     },
+  purple: { hex: "#7c3aed", bg: "from-violet-50 to-violet-50/60",    border: "border-violet-300/60", text: "text-violet-700", iconBg: "bg-violet-100"    },
+  red:    { hex: "#dc2626", bg: "from-red-50 to-red-50/60",          border: "border-red-300/60",    text: "text-red-700",    iconBg: "bg-red-100"       },
 };
 
 export function StatusKort({ titel, varde, subtitel, ikon, farg }: StatusKortProps) {
+  const c = accentMap[farg];
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      className={`rounded-lg border p-4 ${fargMap[farg]}`}
+      className={`relative rounded-lg border bg-gradient-to-b ${c.bg} ${c.border} p-4 overflow-hidden`}
     >
-      <div className="flex items-center justify-between mb-2">
-        <span className={`${textMap[farg]}`}>{ikon}</span>
-        <span className="text-[9px] font-mono text-muted-foreground uppercase">{titel}</span>
+      {/* top accent line */}
+      <div className="absolute top-0 left-0 right-0 h-0.5 rounded-t-lg" style={{ backgroundColor: c.hex, opacity: 0.7 }} />
+
+      <div className="flex items-start justify-between mb-3">
+        <div className={`p-2 rounded-md ${c.iconBg} ${c.text}`}>{ikon}</div>
+        <span className="text-[8px] font-mono text-muted-foreground/60 uppercase tracking-widest text-right leading-tight max-w-[80px]">{titel}</span>
       </div>
-      <div className={`text-2xl font-bold font-mono ${textMap[farg]}`}>{varde}</div>
-      {subtitel && <div className="text-[10px] text-muted-foreground mt-1">{subtitel}</div>}
+
+      <div className={`text-3xl font-black font-mono ${c.text} leading-none`}>{varde}</div>
+      {subtitel && <div className="text-[10px] text-muted-foreground/70 mt-1.5 font-mono">{subtitel}</div>}
     </motion.div>
   );
 }

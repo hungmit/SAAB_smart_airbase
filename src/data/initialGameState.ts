@@ -1,4 +1,4 @@
-import { GameState, Base, Aircraft, SparePartStock, PersonnelGroup } from "@/types/game";
+import { GameState, Base, Aircraft, SparePartStock, PersonnelGroup, ATOOrder } from "@/types/game";
 
 const createSpareParts = (): SparePartStock[] => [
   { id: "radar", name: "Radar LRU", category: "Avionik", quantity: 4, maxQuantity: 6, resupplyDays: 5, onOrder: 0 },
@@ -88,6 +88,205 @@ const FOB_S: Base = {
   maintenanceBays: { total: 1, occupied: 0 },
 };
 
+export const initialATOOrders: ATOOrder[] = [
+  {
+    id: "ato-qra-1",
+    day: 1,
+    missionType: "QRA",
+    label: "Beredskapsinsats H24",
+    startHour: 0,
+    endHour: 24,
+    requiredCount: 2,
+    aircraftType: "GripenE",
+    payload: "IRIS-T",
+    launchBase: "MOB",
+    priority: "high",
+    status: "pending",
+    assignedAircraft: [],
+    sortiesPerDay: 1,
+  },
+  {
+    id: "ato-recce-1",
+    day: 1,
+    missionType: "RECCE",
+    label: "Spaningsuppdrag",
+    startHour: 8,
+    endHour: 12,
+    requiredCount: 2,
+    aircraftType: "GripenE",
+    payload: "SPANING-POD",
+    launchBase: "FOB_N",
+    priority: "medium",
+    status: "pending",
+    assignedAircraft: [],
+  },
+];
+
+export const generateATOOrders = (day: number, phase: string): ATOOrder[] => {
+  const orders: ATOOrder[] = [
+    {
+      id: `ato-qra-${day}`,
+      day,
+      missionType: "QRA",
+      label: "Beredskapsinsats H24",
+      startHour: 0,
+      endHour: 24,
+      requiredCount: 2,
+      aircraftType: "GripenE",
+      payload: "IRIS-T",
+      launchBase: "MOB",
+      priority: "high",
+      status: "pending",
+      assignedAircraft: [],
+    },
+  ];
+
+  if (phase === "FRED") {
+    orders.push({
+      id: `ato-recce-${day}`,
+      day,
+      missionType: "RECCE",
+      label: "Daglig spaning",
+      startHour: 8,
+      endHour: 12,
+      requiredCount: 2,
+      aircraftType: "GripenE",
+      payload: "SPANING-POD",
+      launchBase: "FOB_N",
+      priority: "medium",
+      status: "pending",
+      assignedAircraft: [],
+    });
+  } else if (phase === "KRIS") {
+    orders.push(
+      {
+        id: `ato-dca-${day}`,
+        day,
+        missionType: "DCA",
+        label: "Defensivt luftförsvar",
+        startHour: 6,
+        endHour: 14,
+        requiredCount: 4,
+        aircraftType: "GripenE",
+        payload: "IRIS-T + Meteor",
+        launchBase: "MOB",
+        priority: "high",
+        status: "pending",
+        assignedAircraft: [],
+      },
+      {
+        id: `ato-aew-${day}`,
+        day,
+        missionType: "AEW",
+        label: "Luftövervakning",
+        startHour: 6,
+        endHour: 18,
+        requiredCount: 1,
+        aircraftType: "GlobalEye",
+        payload: "GlobalEye-sensor",
+        launchBase: "MOB",
+        priority: "high",
+        status: "pending",
+        assignedAircraft: [],
+      },
+      {
+        id: `ato-recce-${day}`,
+        day,
+        missionType: "RECCE",
+        label: "Spaningsuppdrag",
+        startHour: 10,
+        endHour: 14,
+        requiredCount: 2,
+        aircraftType: "GripenE",
+        launchBase: "FOB_N",
+        priority: "medium",
+        status: "pending",
+        assignedAircraft: [],
+      }
+    );
+  } else {
+    // KRIG
+    orders.push(
+      {
+        id: `ato-dca1-${day}`,
+        day,
+        missionType: "DCA",
+        label: "Luftförsvar omgång 1",
+        startHour: 6,
+        endHour: 12,
+        requiredCount: 6,
+        aircraftType: "GripenE",
+        payload: "IRIS-T + Meteor",
+        launchBase: "MOB",
+        priority: "high",
+        status: "pending",
+        assignedAircraft: [],
+      },
+      {
+        id: `ato-dca2-${day}`,
+        day,
+        missionType: "DCA",
+        label: "Luftförsvar omgång 2",
+        startHour: 12,
+        endHour: 18,
+        requiredCount: 6,
+        aircraftType: "GripenE",
+        payload: "IRIS-T + Meteor",
+        launchBase: "FOB_N",
+        priority: "high",
+        status: "pending",
+        assignedAircraft: [],
+      },
+      {
+        id: `ato-ai-${day}`,
+        day,
+        missionType: "AI_DT",
+        label: "Attackuppdrag dagljus",
+        startHour: 8,
+        endHour: 11,
+        requiredCount: 4,
+        aircraftType: "GripenE",
+        payload: "GBU-39 + RBS-15F",
+        launchBase: "FOB_S",
+        priority: "high",
+        status: "pending",
+        assignedAircraft: [],
+      },
+      {
+        id: `ato-recce-${day}`,
+        day,
+        missionType: "RECCE",
+        label: "Spaningsuppdrag",
+        startHour: 7,
+        endHour: 15,
+        requiredCount: 2,
+        aircraftType: "GripenE",
+        launchBase: "FOB_N",
+        priority: "medium",
+        status: "pending",
+        assignedAircraft: [],
+      },
+      {
+        id: `ato-escort-${day}`,
+        day,
+        missionType: "ESCORT",
+        label: "Eskortuppdrag",
+        startHour: 8,
+        endHour: 11,
+        requiredCount: 2,
+        aircraftType: "GripenF_EA",
+        payload: "IRIS-T",
+        launchBase: "FOB_S",
+        priority: "high",
+        status: "pending",
+        assignedAircraft: [],
+      }
+    );
+  }
+
+  return orders;
+};
+
 export const initialGameState: GameState = {
   day: 1,
   hour: 6,
@@ -95,6 +294,7 @@ export const initialGameState: GameState = {
   bases: [MOB, FOB_N, FOB_S],
   successfulMissions: 0,
   failedMissions: 0,
+  atoOrders: initialATOOrders,
   events: [
     {
       id: "init",

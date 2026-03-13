@@ -1,6 +1,6 @@
 import { useState, useCallback } from "react";
 import { GameState, GameEvent, ScenarioPhase, Aircraft } from "@/types/game";
-import { initialGameState } from "@/data/initialGameState";
+import { initialGameState, generateATOOrders } from "@/data/initialGameState";
 
 const phaseForDay = (day: number): ScenarioPhase => {
   if (day <= 1) return "FRED";
@@ -95,12 +95,25 @@ export function useGameState() {
         });
       }
 
+      // Generate new ATO orders on day rollover
+      const newATOOrders = dayRollover
+        ? generateATOOrders(nextDay, nextPhase)
+        : prev.atoOrders;
+
+      // Mark dispatched orders as completed if their window has passed
+      const updatedATOOrders = newATOOrders.map((o) =>
+        o.status === "dispatched" && nextHour >= o.endHour
+          ? { ...o, status: "completed" as const }
+          : o
+      );
+
       return {
         ...prev,
         day: nextDay,
         hour: nextHour,
         phase: nextPhase,
         bases: updatedBases,
+        atoOrders: updatedATOOrders,
         events: [...newEvents, ...prev.events].slice(0, 50),
       };
     });
@@ -135,6 +148,54 @@ export function useGameState() {
     });
     addEvent({ type: "success", message: `${aircraftId} skickad på ${mission}-uppdrag`, base: baseId as any });
   }, [addEvent]);
+
+  const assignAircraftToOrder = useCallback((orderId: string, aircraftIds: string[]) => {
+    setState((prev) => ({
+      ...prev,
+      atoOrders: prev.atoOrders.map((o) =>
+        o.id === orderId
+          ? { ...o, assignedAircraft: aircraftIds, status: "assigned" as const }
+          : o
+      ),
+    }));
+  }, []);
+
+  const dispatchOrder = useCallback((orderId: string) => {
+    setState((prev) => {
+      const order = prev.atoOrders.find((o) => o.id === orderId);
+      if (!order || order.assignedAircraft.length === 0) return prev;
+
+      const updatedBases = prev.bases.map((base) => {
+        if (base.id !== order.launchBase) return base;
+        return {
+          ...base,
+          aircraft: base.aircraft.map((ac) =>
+            order.assignedAircraft.includes(ac.id) && ac.status === "mission_capable"
+              ? { ...ac, status: "on_mission" as const, currentMission: order.missionType }
+              : ac
+          ),
+        };
+      });
+
+      const newEvent: GameEvent = {
+        id: crypto.randomUUID(),
+        timestamp: `Dag ${prev.day} ${String(prev.hour).padStart(2, "0")}:00`,
+        type: "success",
+        message: `ATO-order ${order.missionType} (${order.label}): ${order.assignedAircraft.length} fpl skickade från ${order.launchBase}`,
+        base: order.launchBase,
+      };
+
+      return {
+        ...prev,
+        bases: updatedBases,
+        successfulMissions: prev.successfulMissions + 1,
+        atoOrders: prev.atoOrders.map((o) =>
+          o.id === orderId ? { ...o, status: "dispatched" as const } : o
+        ),
+        events: [newEvent, ...prev.events].slice(0, 50),
+      };
+    });
+  }, []);
 
   const getResourceSummary = useCallback((): string => {
     const lines: string[] = [];
@@ -176,5 +237,5 @@ export function useGameState() {
     setState(initialGameState);
   }, []);
 
-  return { state, advanceTurn, startMaintenance, sendOnMission, addEvent, getResourceSummary, resetGame };
+  return { state, advanceTurn, startMaintenance, sendOnMission, addEvent, getResourceSummary, resetGame, assignAircraftToOrder, dispatchOrder };
 }

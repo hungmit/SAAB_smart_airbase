@@ -12,9 +12,10 @@ import { FlygschemaTidslinje } from "@/components/dashboard/FlygschemaTidslinje"
 import { ResursPanel } from "@/components/dashboard/ResursPanel";
 import { SpelprocessFlode } from "@/components/dashboard/SpelprocessFlode";
 import { RemainingLifeGraf } from "@/components/dashboard/RemainingLifeGraf";
+import { BaseMap } from "@/components/game/BaseMap";
 import { toast } from "sonner";
 import { BaseType } from "@/types/game";
-import { Plane, Users, AlertTriangle, Activity, Clock, Target, Bot } from "lucide-react";
+import { ShieldCheck, Crosshair, Hammer, Users, Siren, Clock, MapPin, Activity, PlaneTakeoff } from "lucide-react";
 
 const Index = () => {
   const { state, advanceTurn, startMaintenance, sendOnMission, getResourceSummary, resetGame } = useGameState();
@@ -84,7 +85,7 @@ const Index = () => {
         <div className="flex items-center gap-2">
           {kritiskaResurser > 0 && (
             <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-status-red/20 text-status-red border border-status-red/30 flex items-center gap-1">
-              <AlertTriangle className="h-3 w-3" />
+              <Siren className="h-3 w-3" />
               {kritiskaResurser} KRITISKA
             </span>
           )}
@@ -97,14 +98,24 @@ const Index = () => {
 
           {/* ROW 1: KPI strip */}
           <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-            <StatusKort titel="Mission Capable" varde={mcTotal} subtitel={`av ${state.bases.reduce((s, b) => s + b.aircraft.length, 0)} totalt`} ikon={<Plane className="h-5 w-5" />} farg="green" />
-            <StatusKort titel="På uppdrag" varde={onMissionTotal} subtitel="aktiva flygningar" ikon={<Target className="h-5 w-5" />} farg="blue" />
-            <StatusKort titel="I underhåll" varde={inMaintTotal} subtitel="NMC + UH" ikon={<Activity className="h-5 w-5" />} farg="yellow" />
+            <StatusKort titel="Mission Capable" varde={mcTotal} subtitel={`av ${state.bases.reduce((s, b) => s + b.aircraft.length, 0)} totalt`} ikon={<ShieldCheck className="h-5 w-5" />} farg="green" />
+            <StatusKort titel="På uppdrag" varde={onMissionTotal} subtitel="aktiva flygningar" ikon={<Crosshair className="h-5 w-5" />} farg="blue" />
+            <StatusKort titel="I underhåll" varde={inMaintTotal} subtitel="NMC + UH" ikon={<Hammer className="h-5 w-5" />} farg="yellow" />
             <StatusKort titel="Personal" varde={`${personnelAvail}/${personnelTotal}`} subtitel="tillgänglig personal" ikon={<Users className="h-5 w-5" />} farg="purple" />
-            <StatusKort titel="Resurslarm" varde={kritiskaResurser} subtitel={kritiskaResurser > 0 ? "behöver åtgärd" : "alla nominella"} ikon={<AlertTriangle className="h-5 w-5" />} farg={kritiskaResurser > 0 ? "red" : "green"} />
+            <StatusKort titel="Resurslarm" varde={kritiskaResurser} subtitel={kritiskaResurser > 0 ? "behöver åtgärd" : "alla nominella"} ikon={<Siren className="h-5 w-5" />} farg={kritiskaResurser > 0 ? "red" : "green"} />
           </div>
 
-          {/* ROW 2: Spelprocess – Uppdragsflöde */}
+          {/* ROW 2: Base Map */}
+          <div className="bg-card border border-border rounded-lg overflow-hidden">
+            <div className="px-4 py-3 border-b border-border flex items-center gap-2">
+              <MapPin className="h-4 w-4 text-primary" />
+              <h3 className="font-sans font-bold text-sm text-foreground">BASÖVERSIKT — {selectedBase.name}</h3>
+              <span className="text-[9px] font-mono text-muted-foreground ml-2">Klicka på byggnader för detaljer</span>
+            </div>
+            <BaseMap base={selectedBase} />
+          </div>
+
+          {/* ROW 3: Spelprocess – Uppdragsflöde */}
           <div className="bg-card border border-border rounded-lg p-4">
             <div className="flex items-center gap-2 mb-3">
               <Activity className="h-4 w-4 text-primary" />
@@ -119,7 +130,7 @@ const Index = () => {
             <div className="bg-card border border-border rounded-lg overflow-hidden">
               <div className="px-4 py-3 border-b border-border flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <Target className="h-4 w-4 text-status-green" />
+                  <Crosshair className="h-4 w-4 text-primary" />
                   <h3 className="font-sans font-bold text-sm text-foreground">DAGENS MISSIONER — ATO-UPPDRAG</h3>
                 </div>
               </div>
@@ -160,7 +171,7 @@ const Index = () => {
             <div className="bg-card border border-border rounded-lg overflow-hidden">
               <div className="px-4 py-3 border-b border-border">
                 <div className="flex items-center gap-2">
-                  <Plane className="h-4 w-4 text-primary" />
+                  <PlaneTakeoff className="h-4 w-4 text-primary" />
                   <h3 className="font-sans font-bold text-sm text-foreground">REMAINING LIFE & SERVICE</h3>
                 </div>
               </div>
